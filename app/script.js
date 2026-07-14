@@ -246,6 +246,12 @@ const cardExampleEs = document.getElementById('card-example-es');
 
 const btnForgot = document.getElementById('btn-forgot');
 const btnRemembered = document.getElementById('btn-remembered');
+const btnNextCard = document.getElementById('btn-next-card');
+const cardProgressEl = document.getElementById('card-progress');
+
+// Cola de práctica (orden de palabras para la sesión)
+let practiceQueue = [];
+let practiceQueueIndex = 0;
 
 const latencyText = document.getElementById('telemetry-latency');
 const difficultyText = document.getElementById('telemetry-difficulty');
@@ -264,11 +270,9 @@ if (flashcard) {
     });
 }
 
-function resetPracticeCard() {
-    if (vocabulary.length === 0) return;
-    
-    // Buscar la palabra que requiera más repaso hoy (mayor riesgo de olvido)
-    let sortedVocab = vocabulary.map((word, idx) => {
+function buildPracticeQueue() {
+    // Ordenar todas las palabras por riesgo de olvido (mayor primero)
+    practiceQueue = vocabulary.map((word, idx) => {
         let prediction = predecirRiesgoOlvido(
             word.elapsedHours,
             word.reviews,
@@ -279,10 +283,38 @@ function resetPracticeCard() {
         );
         return { index: idx, prob: prediction.probability };
     }).sort((a, b) => b.prob - a.prob);
+    practiceQueueIndex = 0;
+}
 
-    // Tomar el índice con mayor riesgo de olvido
-    currentWordIndex = sortedVocab[0].index;
+function updateProgressCounter() {
+    if (cardProgressEl) {
+        cardProgressEl.innerText = `Tarjeta ${practiceQueueIndex + 1} de ${practiceQueue.length}`;
+    }
+}
+
+function resetPracticeCard() {
+    if (vocabulary.length === 0) return;
+    buildPracticeQueue();
+    currentWordIndex = practiceQueue[0].index;
     loadWordToCard(vocabulary[currentWordIndex]);
+    updateProgressCounter();
+    // Asegurar botón siguiente activo
+    if (btnNextCard) {
+        btnNextCard.disabled = false;
+        btnNextCard.style.opacity = '1';
+    }
+}
+
+function goToNextCard() {
+    practiceQueueIndex = (practiceQueueIndex + 1) % practiceQueue.length;
+    currentWordIndex = practiceQueue[practiceQueueIndex].index;
+    loadWordToCard(vocabulary[currentWordIndex]);
+    updateProgressCounter();
+    // Restablecer botones de respuesta
+    btnForgot.disabled = false;
+    btnRemembered.disabled = false;
+    btnForgot.style.opacity = '1';
+    btnRemembered.style.opacity = '1';
 }
 
 function loadWordToCard(item) {
@@ -376,10 +408,12 @@ function logStudentAnswer(wasCorrect) {
     // Mostrar feedback visual e inferencia actualizada
     updatePredictionDisplay(item);
 
-    // Cargar la siguiente palabra después de 2.5 segundos
-    setTimeout(() => {
-        resetPracticeCard();
-    }, 2500);
+    // Activar el botón siguiente con animación de pulso
+    if (btnNextCard) {
+        btnNextCard.disabled = false;
+        btnNextCard.style.opacity = '1';
+        btnNextCard.classList.add('pulse-ready');
+    }
 }
 
 if (btnForgot) {
@@ -387,6 +421,12 @@ if (btnForgot) {
 }
 if (btnRemembered) {
     btnRemembered.addEventListener('click', () => logStudentAnswer(true));
+}
+if (btnNextCard) {
+    btnNextCard.addEventListener('click', () => {
+        btnNextCard.classList.remove('pulse-ready');
+        goToNextCard();
+    });
 }
 
 // ----------------- TAB 2: SIMULADOR DE MACHINE LEARNING -----------------

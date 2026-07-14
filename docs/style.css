@@ -410,6 +410,65 @@ h1 {
     flex-grow: 1;
 }
 
+/* Siguiente Tarjeta Row */
+.next-card-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    gap: 12px;
+}
+
+.card-progress {
+    font-size: 13px;
+    color: #4b5563;
+    font-family: 'Space Mono', 'Outfit', monospace;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.btn-next {
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(79, 70, 229, 0.2));
+    border: 1px solid rgba(124, 58, 237, 0.4);
+    color: #a78bfa;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    letter-spacing: 0.3px;
+}
+
+.btn-next:hover {
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.35), rgba(79, 70, 229, 0.35));
+    border-color: rgba(124, 58, 237, 0.7);
+    color: #c4b5fd;
+    transform: translateX(4px);
+    box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+}
+
+.btn-next:active {
+    transform: translateX(2px) scale(0.97);
+}
+
+/* Pulso al estar listo para avanzar */
+@keyframes pulseReady {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.5); }
+    50% { box-shadow: 0 0 0 8px rgba(124, 58, 237, 0); }
+}
+
+.btn-next.pulse-ready {
+    animation: pulseReady 1.2s ease infinite;
+    border-color: rgba(124, 58, 237, 0.8);
+    color: #c4b5fd;
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.3), rgba(79, 70, 229, 0.3));
+}
+
 /* Telemetry Card Right */
 .telemetry-card h3 {
     font-size: 16px;
