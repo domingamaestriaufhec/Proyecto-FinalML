@@ -3,299 +3,1138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SpacedL2 - Simulador de Repetición Espaciada y Curva del Olvido</title>
-    <meta name="description" content="Aplicación interactiva y simulador de Machine Learning para optimizar la retención de vocabulario utilizando la curva del olvido de Ebbinghaus.">
-    <!-- Google Fonts -->
+    <title>SpacedL2 — Retención de Vocabulario con Machine Learning</title>
+    <meta name="description" content="Proyecto Final de Maestría: Simulador de Repetición Espaciada y Curva del Olvido usando 4 modelos de Machine Learning. Por Dominga Rodríguez, UFHEC.">
+    <meta name="author" content="Dominga Rodríguez">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* ===== LANDING PAGE STYLES ===== */
+        :root {
+            --accent-1: #7c3aed;
+            --accent-2: #4f46e5;
+            --accent-3: #06b6d4;
+            --accent-4: #10b981;
+            --accent-5: #f59e0b;
+            --accent-6: #ec4899;
+            --bg-deep: #04030a;
+            --bg-mid: #080714;
+            --text-primary: #f0f0ff;
+            --text-muted: #6b7280;
+            --glow-purple: rgba(124, 58, 237, 0.4);
+            --glow-cyan: rgba(6, 182, 212, 0.4);
+        }
+
+        #landing-page {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: var(--bg-deep);
+            overflow-x: hidden;
+        }
+
+        #app-page {
+            display: none;
+        }
+
+        /* ===== ANIMATED BACKGROUND ===== */
+        .bg-orbs {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.25;
+            animation: orbFloat 10s ease-in-out infinite alternate;
+        }
+        .orb-1 { width: 600px; height: 600px; background: var(--accent-1); top: -200px; left: -200px; animation-delay: 0s; }
+        .orb-2 { width: 500px; height: 500px; background: var(--accent-3); bottom: -150px; right: -150px; animation-delay: -5s; }
+        .orb-3 { width: 350px; height: 350px; background: var(--accent-6); top: 40%; left: 50%; transform: translate(-50%, -50%); animation-delay: -3s; }
+        @keyframes orbFloat {
+            from { transform: translate(0, 0) scale(1); }
+            to { transform: translate(30px, -30px) scale(1.05); }
+        }
+
+        /* ===== NAVBAR ===== */
+        .landing-nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 48px;
+            background: rgba(4, 3, 10, 0.7);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #a78bfa, #38bdf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .nav-brand span { font-size: 28px; }
+        .nav-launch-btn {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 24px var(--glow-purple);
+        }
+        .nav-launch-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px var(--glow-purple);
+        }
+
+        /* ===== HERO ===== */
+        .hero {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 100vh;
+            padding: 120px 24px 80px;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            background: rgba(124, 58, 237, 0.12);
+            border: 1px solid rgba(124, 58, 237, 0.35);
+            border-radius: 50px;
+            font-size: 13px;
+            color: #a78bfa;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 32px;
+            animation: fadeSlideUp 0.8s ease both;
+        }
+        .hero-badge::before {
+            content: '';
+            width: 8px; height: 8px;
+            background: #a78bfa;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #a78bfa;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+        .hero-title {
+            font-size: clamp(52px, 8vw, 96px);
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: -3px;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            animation: fadeSlideUp 0.8s ease 0.1s both;
+        }
+        .hero-title .gradient-text {
+            background: linear-gradient(135deg, #a78bfa 0%, #38bdf8 50%, #34d399 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero-subtitle {
+            font-size: clamp(16px, 2.5vw, 22px);
+            color: #94a3b8;
+            max-width: 680px;
+            line-height: 1.7;
+            margin: 24px auto 0;
+            font-weight: 400;
+            animation: fadeSlideUp 0.8s ease 0.2s both;
+        }
+        .hero-cta-group {
+            display: flex;
+            gap: 16px;
+            margin-top: 48px;
+            flex-wrap: wrap;
+            justify-content: center;
+            animation: fadeSlideUp 0.8s ease 0.3s both;
+        }
+        .cta-primary {
+            padding: 16px 40px;
+            background: linear-gradient(135deg, #7c3aed, #4f46e5);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 40px rgba(124, 58, 237, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        .cta-primary::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .cta-primary:hover::after { opacity: 1; }
+        .cta-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 60px rgba(124, 58, 237, 0.7);
+        }
+        .cta-secondary {
+            padding: 16px 40px;
+            background: rgba(255,255,255,0.04);
+            color: #e2e8f0;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .cta-secondary:hover {
+            background: rgba(255,255,255,0.08);
+            transform: translateY(-2px);
+        }
+
+        /* Hero Stats */
+        .hero-stats {
+            display: flex;
+            gap: 48px;
+            margin-top: 64px;
+            animation: fadeSlideUp 0.8s ease 0.4s both;
+        }
+        .stat-item { text-align: center; }
+        .stat-num {
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #a78bfa, #38bdf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .stat-label { font-size: 13px; color: #475569; margin-top: 4px; letter-spacing: 0.5px; }
+
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== SCROLL INDICATOR ===== */
+        .scroll-down {
+            position: absolute;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: #475569;
+            font-size: 12px;
+            letter-spacing: 2px;
+            animation: bounce 2s infinite;
+        }
+        .scroll-arrow { font-size: 20px; }
+        @keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0);} 50%{transform:translateX(-50%) translateY(8px);} }
+
+        /* ===== SECTION WRAPPER ===== */
+        .section {
+            position: relative;
+            z-index: 1;
+            padding: 100px 48px;
+            max-width: 1280px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .section-label {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #7c3aed;
+            margin-bottom: 16px;
+        }
+        .section-title {
+            font-size: clamp(32px, 4vw, 52px);
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            color: var(--text-primary);
+            line-height: 1.1;
+            margin-bottom: 20px;
+        }
+        .section-desc {
+            font-size: 17px;
+            color: #6b7280;
+            max-width: 600px;
+            line-height: 1.8;
+        }
+        .section-header { margin-bottom: 64px; }
+
+        /* ===== ML MODELS SECTION ===== */
+        .models-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+        .model-card {
+            position: relative;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 28px;
+            padding: 36px;
+            overflow: hidden;
+            cursor: default;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .model-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 28px;
+            background: var(--card-glow);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+        .model-card:hover::before { opacity: 1; }
+        .model-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--card-accent);
+            box-shadow: 0 20px 60px var(--card-shadow);
+        }
+        .model-card.card-lr {
+            --card-accent: rgba(124, 58, 237, 0.5);
+            --card-glow: linear-gradient(135deg, rgba(124,58,237,0.06), transparent);
+            --card-shadow: rgba(124, 58, 237, 0.2);
+        }
+        .model-card.card-dt {
+            --card-accent: rgba(6, 182, 212, 0.5);
+            --card-glow: linear-gradient(135deg, rgba(6,182,212,0.06), transparent);
+            --card-shadow: rgba(6, 182, 212, 0.2);
+        }
+        .model-card.card-rf {
+            --card-accent: rgba(16, 185, 129, 0.5);
+            --card-glow: linear-gradient(135deg, rgba(16,185,129,0.06), transparent);
+            --card-shadow: rgba(16, 185, 129, 0.2);
+        }
+        .model-card.card-svm {
+            --card-accent: rgba(245, 158, 11, 0.5);
+            --card-glow: linear-gradient(135deg, rgba(245,158,11,0.06), transparent);
+            --card-shadow: rgba(245, 158, 11, 0.2);
+        }
+
+        .model-number {
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        .model-icon-wrap {
+            width: 64px; height: 64px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin-bottom: 24px;
+        }
+        .card-lr .model-icon-wrap { background: rgba(124,58,237,0.15); }
+        .card-dt .model-icon-wrap { background: rgba(6,182,212,0.15); }
+        .card-rf .model-icon-wrap { background: rgba(16,185,129,0.15); }
+        .card-svm .model-icon-wrap { background: rgba(245,158,11,0.15); }
+
+        .model-name {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+        .model-tag {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+        .card-lr .model-tag { background: rgba(124,58,237,0.15); color: #a78bfa; }
+        .card-dt .model-tag { background: rgba(6,182,212,0.15); color: #38bdf8; }
+        .card-rf .model-tag { background: rgba(16,185,129,0.15); color: #34d399; }
+        .card-svm .model-tag { background: rgba(245,158,11,0.15); color: #fbbf24; }
+
+        .model-desc {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.7;
+            margin-bottom: 24px;
+        }
+        .model-metrics {
+            display: flex;
+            gap: 16px;
+        }
+        .metric-pill {
+            flex: 1;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+        .metric-pill-val {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+        .metric-pill-key {
+            font-size: 10px;
+            color: #4b5563;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 2px;
+        }
+        .card-lr .metric-pill-val { color: #a78bfa; }
+        .card-dt .metric-pill-val { color: #38bdf8; }
+        .card-rf .metric-pill-val { color: #34d399; }
+        .card-svm .metric-pill-val { color: #fbbf24; }
+
+        /* ===== FEATURES SECTION ===== */
+        .features-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        .feature-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 24px;
+            padding: 32px;
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover {
+            background: rgba(255,255,255,0.04);
+            transform: translateY(-4px);
+            border-color: rgba(255,255,255,0.1);
+        }
+        .feature-icon {
+            font-size: 36px;
+            margin-bottom: 20px;
+            display: block;
+        }
+        .feature-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+        .feature-text {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.7;
+        }
+
+        /* ===== AUTHOR SECTION ===== */
+        .author-section {
+            position: relative;
+            z-index: 1;
+            padding: 80px 48px;
+        }
+        .author-card {
+            max-width: 960px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, rgba(124,58,237,0.08), rgba(6,182,212,0.08));
+            border: 1px solid rgba(124,58,237,0.2);
+            border-radius: 36px;
+            padding: 56px;
+            display: flex;
+            align-items: center;
+            gap: 48px;
+            position: relative;
+            overflow: hidden;
+        }
+        .author-card::before {
+            content: '';
+            position: absolute;
+            top: -100px; right: -100px;
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(124,58,237,0.15), transparent 70%);
+            pointer-events: none;
+        }
+        .author-avatar {
+            flex-shrink: 0;
+            width: 120px; height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #7c3aed, #06b6d4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 52px;
+            box-shadow: 0 0 60px rgba(124,58,237,0.5);
+            position: relative;
+        }
+        .author-avatar::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #7c3aed, #06b6d4, #ec4899);
+            z-index: -1;
+        }
+        .author-info { flex-grow: 1; }
+        .author-role {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #7c3aed;
+            margin-bottom: 12px;
+        }
+        .author-name {
+            font-size: 42px;
+            font-weight: 900;
+            letter-spacing: -1.5px;
+            color: var(--text-primary);
+            line-height: 1;
+            margin-bottom: 16px;
+        }
+        .author-name .accent { color: #a78bfa; }
+        .author-bio {
+            font-size: 15px;
+            color: #6b7280;
+            line-height: 1.8;
+            max-width: 500px;
+            margin-bottom: 24px;
+        }
+        .author-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .author-tag {
+            padding: 6px 16px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 50px;
+            font-size: 13px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        /* ===== FOOTER ===== */
+        .landing-footer {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 40px 24px;
+            border-top: 1px solid rgba(255,255,255,0.04);
+            color: #374151;
+            font-size: 14px;
+        }
+        .landing-footer strong { color: #6b7280; }
+
+        /* ===== SEPARATOR ===== */
+        .section-separator {
+            border: none;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        /* ===== APP TOGGLE BUTTON ===== */
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 200;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: rgba(10,9,20,0.9);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 50px;
+            color: #94a3b8;
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            backdrop-filter: blur(16px);
+            transition: all 0.3s;
+        }
+        .back-btn:hover { color: white; border-color: rgba(255,255,255,0.15); }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .landing-nav { padding: 14px 20px; }
+            .section { padding: 60px 20px; }
+            .models-grid { grid-template-columns: 1fr; }
+            .features-row { grid-template-columns: 1fr; }
+            .author-card { flex-direction: column; text-align: center; padding: 36px 24px; }
+            .author-tags { justify-content: center; }
+            .hero-stats { gap: 24px; }
+        }
+    </style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- Sidebar Navigation -->
-        <aside class="sidebar">
-            <div class="logo-area">
-                <div class="logo-icon">🧠</div>
-                <span class="logo-text">SpacedL2</span>
-            </div>
-            <nav class="nav-menu">
-                <button class="nav-item active" data-tab="practice" id="btn-practice">
-                    <span class="nav-icon">🎴</span> Práctica Activa
-                </button>
-                <button class="nav-item" data-tab="simulator" id="btn-simulator">
-                    <span class="nav-icon">🎛️</span> Simulador ML
-                </button>
-                <button class="nav-item" data-tab="dashboard" id="btn-dashboard">
-                    <span class="nav-icon">📊</span> Panel de Retención
-                </button>
-            </nav>
-            <div class="user-status">
-                <div class="status-avatar">🎓</div>
-                <div class="status-info">
-                    <p class="user-name">Estudiante L2</p>
-                    <span class="user-level" id="nav-user-level">Nivel: B1 (Intermedio)</span>
-                </div>
-            </div>
-        </aside>
+    <!-- ===== ANIMATED BG ===== -->
+    <div class="bg-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
 
-        <!-- Main Workspace -->
-        <main class="main-content">
-            <!-- Header -->
-            <header class="app-header">
-                <div>
-                    <h1 id="page-title">Práctica Activa de Vocabulario</h1>
-                    <p class="subtitle" id="page-subtitle">Refuerza tu memoria en el momento exacto usando Machine Learning.</p>
+    <!-- ===== BACK BUTTON (shows when in app mode) ===== -->
+    <button class="back-btn" id="back-to-landing" onclick="showLanding()">
+        ← Volver al Inicio
+    </button>
+
+    <!-- ============================= -->
+    <!--        LANDING PAGE           -->
+    <!-- ============================= -->
+    <div id="landing-page">
+
+        <!-- NAVBAR -->
+        <nav class="landing-nav">
+            <div class="nav-brand">
+                <span>🧠</span> SpacedL2
+            </div>
+            <button class="nav-launch-btn" onclick="showApp()">
+                🚀 Abrir Simulador
+            </button>
+        </nav>
+
+        <!-- HERO -->
+        <section class="hero">
+            <div class="hero-badge">✨ Proyecto Final de Maestría · UFHEC · 2025</div>
+            <h1 class="hero-title">
+                Aprende más.<br>
+                <span class="gradient-text">Olvida menos.</span>
+            </h1>
+            <p class="hero-subtitle">
+                Simulador de <strong style="color:#e2e8f0;">Repetición Espaciada</strong> y <strong style="color:#e2e8f0;">Curva del Olvido</strong> potenciado por 4 modelos de Machine Learning. Diseñado para maximizar la retención de vocabulario en L2.
+            </p>
+            <div class="hero-cta-group">
+                <button class="cta-primary" onclick="showApp()">
+                    🎯 Lanzar Simulador
+                </button>
+                <button class="cta-secondary" onclick="scrollToModels()">
+                    Ver Modelos ML ↓
+                </button>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <div class="stat-num">4</div>
+                    <div class="stat-label">Modelos ML</div>
                 </div>
-                <div class="header-widgets">
-                    <div class="mcer-badge">
-                        <span>Ajustar mi Nivel:</span>
-                        <select id="user-mcer-select">
-                            <option value="A1">A1 (Principiante)</option>
-                            <option value="A2">A2 (Básico)</option>
-                            <option value="B1" selected>B1 (Pre-Intermedio)</option>
-                            <option value="B2">B2 (Intermedio Alto)</option>
-                            <option value="C1">C1 (Avanzado)</option>
-                            <option value="C2">C2 (Maestría)</option>
-                        </select>
+                <div class="stat-item">
+                    <div class="stat-num">10</div>
+                    <div class="stat-label">Palabras Clave</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num">~91%</div>
+                    <div class="stat-label">Exactitud Máx.</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num">5</div>
+                    <div class="stat-label">Features</div>
+                </div>
+            </div>
+            <div class="scroll-down">
+                <span>SCROLL</span>
+                <span class="scroll-arrow">↓</span>
+            </div>
+        </section>
+
+        <hr class="section-separator">
+
+        <!-- ML MODELS SECTION -->
+        <section class="section" id="models-section">
+            <div class="section-header">
+                <div class="section-label">🤖 Machine Learning</div>
+                <h2 class="section-title">Los 4 Modelos<br>Supervisados</h2>
+                <p class="section-desc">
+                    Cuatro algoritmos de clasificación compiten y colaboran para predecir el riesgo de olvido del estudiante en tiempo real.
+                </p>
+            </div>
+
+            <div class="models-grid">
+
+                <!-- MODEL 1: Logistic Regression -->
+                <div class="model-card card-lr">
+                    <div class="model-number">MODELO 01 / 04</div>
+                    <div class="model-icon-wrap">📈</div>
+                    <div class="model-name">Regresión Logística</div>
+                    <div class="model-tag">Baseline · Lineal</div>
+                    <p class="model-desc">
+                        Modelo interpretable que calcula la probabilidad de olvido mediante una función sigmoide. Utiliza 5 variables predictoras (features) y sirve como línea base para comparar los modelos más complejos. <strong style="color:#e2e8f0;">Activo en la demo del simulador.</strong>
+                    </p>
+                    <div class="model-metrics">
+                        <div class="metric-pill">
+                            <div class="metric-pill-val">~85%</div>
+                            <div class="metric-pill-key">Exactitud</div>
+                        </div>
+                        <div class="metric-pill">
+                            <div class="metric-pill-val">Sigmoide</div>
+                            <div class="metric-pill-key">Función</div>
+                        </div>
+                        <div class="metric-pill">
+                            <div class="metric-pill-val">Alta</div>
+                            <div class="metric-pill-key">Interpretab.</div>
+                        </div>
                     </div>
                 </div>
-            </header>
 
-            <!-- TAB CONTENT 1: Practice Cards -->
-            <section id="tab-practice" class="tab-panel active">
-                <div class="practice-layout">
-                    <div class="card-column">
-                        <div class="flashcard-container">
-                            <div class="flashcard" id="flashcard">
-                                <div class="flashcard-front">
-                                    <span class="word-category" id="card-category">Adjetivo</span>
-                                    <h2 class="word-text" id="card-word">reluctant</h2>
-                                    <p class="word-pronunciation" id="card-pronunciation">/rɪˈlʌk.tənt/</p>
-                                    <p class="tap-hint">Haz clic para voltear la tarjeta</p>
-                                </div>
-                                <div class="flashcard-back">
-                                    <span class="word-category">Traducción</span>
-                                    <h2 class="word-meaning" id="card-translation">renuente / inclinado a evitar</h2>
-                                    <div class="example-box">
-                                        <p class="example-en" id="card-example-en">"She was reluctant to admit she was wrong."</p>
-                                        <p class="example-es" id="card-example-es">"Ella era renuente a admitir que estaba equivocada."</p>
+                <!-- MODEL 2: Decision Tree -->
+                <div class="model-card card-dt">
+                    <div class="model-number">MODELO 02 / 04</div>
+                    <div class="model-icon-wrap">🌳</div>
+                    <div class="model-name">Árbol de Decisión</div>
+                    <div class="model-tag">No Lineal · Explainable</div>
+                    <p class="model-desc">
+                        Divide el espacio de decisión en reglas jerárquicas tipo si/entonces. Extremadamente visual e interpretable: permite entender <em>exactamente</em> por qué el modelo clasifica al estudiante en riesgo. Profundidad óptima = 4.
+                    </p>
+                    <div class="model-metrics">
+                        <div class="metric-pill">
+                            <div class="metric-pill-val">~83%</div>
+                            <div class="metric-pill-key">Exactitud</div>
+                        </div>
+                        <div class="metric-pill">
+                            <div class="metric-pill-val">Gini</div>
+                            <div class="metric-pill-key">Criterio</div>
+                        </div>
+                        <div class="metric-pill">
+                            <div class="metric-pill-val">Máx.</div>
+                            <div class="metric-pill-key">Interpretab.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MODEL 3: Random Forest -->
+                <div class="model-card card-rf">
+                    <div class="model-number">MODELO 03 / 04</div>
+                    <div class="model-icon-wrap">🌲</div>
+                    <div class="model-name">Random Forest</div>
+                    <div class="model-tag">Ensemble · Robusto</div>
+                    <p class="model-desc">
+                        Ensemble de 100 árboles de decisión entrenados con <em>bagging</em> y selección aleatoria de features. El modelo más robusto del proyecto: reduce el sobreajuste y obtiene la <strong style="color:#34d399;">mayor exactitud general</strong> en validación cruzada.
+                    </p>
+                    <div class="model-metrics">
+                        <div class="metric-pill">
+                            <div class="metric-pill-val">~91%</div>
+                            <div class="metric-pill-key">Exactitud</div>
+                        </div>
+                        <div class="metric-pill">
+                            <div class="metric-pill-val">100</div>
+                            <div class="metric-pill-key">Árboles</div>
+                        </div>
+                        <div class="metric-pill">
+                            <div class="metric-pill-val">Media</div>
+                            <div class="metric-pill-key">Interpretab.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MODEL 4: SVM -->
+                <div class="model-card card-svm">
+                    <div class="model-number">MODELO 04 / 04</div>
+                    <div class="model-icon-wrap">⚡</div>
+                    <div class="model-name">SVM</div>
+                    <div class="model-tag">Kernel RBF · Margen Máximo</div>
+                    <p class="model-desc">
+                        Support Vector Machine con kernel RBF (Radial Basis Function). Maximiza el margen entre clases en espacios de alta dimensión. Excelente para patrones no lineales complejos como las combinaciones de latencia, repasos y nivel MCER.
+                    </p>
+                    <div class="model-metrics">
+                        <div class="metric-pill">
+                            <div class="metric-pill-val">~88%</div>
+                            <div class="metric-pill-key">Exactitud</div>
+                        </div>
+                        <div class="metric-pill">
+                            <div class="metric-pill-val">RBF</div>
+                            <div class="metric-pill-key">Kernel</div>
+                        </div>
+                        <div class="metric-pill">
+                            <div class="metric-pill-val">Baja</div>
+                            <div class="metric-pill-key">Interpretab.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <hr class="section-separator">
+
+        <!-- FEATURES SECTION -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-label">⚙️ Funcionalidades</div>
+                <h2 class="section-title">¿Qué hace<br>SpacedL2?</h2>
+                <p class="section-desc">Tres módulos integrados para un aprendizaje basado en evidencia científica y predicción de datos.</p>
+            </div>
+            <div class="features-row">
+                <div class="feature-card">
+                    <span class="feature-icon">🎴</span>
+                    <div class="feature-title">Práctica Activa de Vocabulario</div>
+                    <p class="feature-text">Tarjetas interactivas con volteo 3D. La app mide tu latencia de respuesta en milisegundos y calcula el riesgo de olvido en tiempo real tras cada interacción.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🎛️</span>
+                    <div class="feature-title">Simulador de ML en Vivo</div>
+                    <p class="feature-text">Ajusta las 5 variables predictoras con sliders y observa cómo cambia la predicción del modelo de Regresión Logística instantáneamente. Visualiza la curva del olvido en tiempo real.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">📊</span>
+                    <div class="feature-title">Panel de Retención</div>
+                    <p class="feature-text">Dashboard completo con tabla de vocabulario, estado de retención por palabra, métricas agregadas y recomendación personalizada del próximo repaso según el algoritmo de espaciado.</p>
+                </div>
+            </div>
+        </section>
+
+        <hr class="section-separator">
+
+        <!-- AUTHOR SECTION -->
+        <section class="author-section">
+            <div class="author-card">
+                <div class="author-avatar">👩‍💻</div>
+                <div class="author-info">
+                    <div class="author-role">✦ Autora del Proyecto</div>
+                    <div class="author-name">
+                        Dominga<br><span class="accent">Rodríguez</span>
+                    </div>
+                    <p class="author-bio">
+                        Estudiante de Maestría en Inteligencia Artificial en la <strong style="color:#e2e8f0;">Universidad Federico Henríquez y Carvajal (UFHEC)</strong>. Este proyecto integra técnicas de aprendizaje automático supervisado con teorías cognitivas de la memoria para optimizar el aprendizaje de vocabulario en segunda lengua (L2).
+                    </p>
+                    <div class="author-tags">
+                        <span class="author-tag">🎓 UFHEC · Maestría IA</span>
+                        <span class="author-tag">🧠 Machine Learning</span>
+                        <span class="author-tag">📚 Lingüística Cognitiva</span>
+                        <span class="author-tag">🔬 Curva del Olvido</span>
+                        <span class="author-tag">⚡ Python · scikit-learn</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="landing-footer">
+            <p>© 2025 <strong>Dominga Rodríguez</strong> · Proyecto Final de Maestría · UFHEC · Aprendizaje Autónomo con IA</p>
+            <p style="margin-top:8px; font-size:12px;">SpacedL2 — Fundado en la Curva del Olvido de Ebbinghaus (1885) · Algoritmo SM-2 · 4 Modelos Supervisados</p>
+        </footer>
+
+    </div><!-- end #landing-page -->
+
+
+    <!-- ============================= -->
+    <!--          APP PAGE             -->
+    <!-- ============================= -->
+    <div id="app-page">
+        <div class="app-container">
+            <!-- Sidebar Navigation -->
+            <aside class="sidebar">
+                <div class="logo-area">
+                    <div class="logo-icon">🧠</div>
+                    <span class="logo-text">SpacedL2</span>
+                </div>
+                <nav class="nav-menu">
+                    <button class="nav-item active" data-tab="practice" id="btn-practice">
+                        <span class="nav-icon">🎴</span> Práctica Activa
+                    </button>
+                    <button class="nav-item" data-tab="simulator" id="btn-simulator">
+                        <span class="nav-icon">🎛️</span> Simulador ML
+                    </button>
+                    <button class="nav-item" data-tab="dashboard" id="btn-dashboard">
+                        <span class="nav-icon">📊</span> Panel de Retención
+                    </button>
+                </nav>
+                <div class="user-status">
+                    <div class="status-avatar">🎓</div>
+                    <div class="status-info">
+                        <p class="user-name">Dominga Rodríguez</p>
+                        <span class="user-level" id="nav-user-level">Nivel: B1 (Intermedio)</span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Workspace -->
+            <main class="main-content">
+                <!-- Header -->
+                <header class="app-header">
+                    <div>
+                        <h1 id="page-title">Práctica Activa de Vocabulario</h1>
+                        <p class="subtitle" id="page-subtitle">Refuerza tu memoria en el momento exacto usando Machine Learning.</p>
+                    </div>
+                    <div class="header-widgets">
+                        <div class="mcer-badge">
+                            <span>Ajustar mi Nivel:</span>
+                            <select id="user-mcer-select">
+                                <option value="A1">A1 (Principiante)</option>
+                                <option value="A2">A2 (Básico)</option>
+                                <option value="B1" selected>B1 (Pre-Intermedio)</option>
+                                <option value="B2">B2 (Intermedio Alto)</option>
+                                <option value="C1">C1 (Avanzado)</option>
+                                <option value="C2">C2 (Maestría)</option>
+                            </select>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- TAB 1: Practice Cards -->
+                <section id="tab-practice" class="tab-panel active">
+                    <div class="practice-layout">
+                        <div class="card-column">
+                            <div class="flashcard-container">
+                                <div class="flashcard" id="flashcard">
+                                    <div class="flashcard-front">
+                                        <span class="word-category" id="card-category">Adjetivo</span>
+                                        <h2 class="word-text" id="card-word">reluctant</h2>
+                                        <p class="word-pronunciation" id="card-pronunciation">/rɪˈlʌk.tənt/</p>
+                                        <p class="tap-hint">Haz clic para voltear la tarjeta</p>
                                     </div>
-                                    <p class="tap-hint">Haz clic para volver al frente</p>
+                                    <div class="flashcard-back">
+                                        <span class="word-category">Traducción</span>
+                                        <h2 class="word-meaning" id="card-translation">renuente / inclinado a evitar</h2>
+                                        <div class="example-box">
+                                            <p class="example-en" id="card-example-en">"She was reluctant to admit she was wrong."</p>
+                                            <p class="example-es" id="card-example-es">"Ella era renuente a admitir que estaba equivocada."</p>
+                                        </div>
+                                        <p class="tap-hint">Haz clic para volver al frente</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="action-buttons-container">
+                                <p class="question-prompt">¿Recordaste la palabra antes de voltear la tarjeta?</p>
+                                <div class="buttons-row">
+                                    <button class="btn btn-danger" id="btn-forgot"><span>❌</span> Lo olvidé</button>
+                                    <button class="btn btn-success" id="btn-remembered"><span>✓</span> Lo recordé</button>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Telemetry Actions -->
-                        <div class="action-buttons-container">
-                            <p class="question-prompt">¿Recordaste la palabra antes de voltear la tarjeta?</p>
-                            <div class="buttons-row">
-                                <button class="btn btn-danger" id="btn-forgot">
-                                    <span>❌</span> Lo olvidé
-                                </button>
-                                <button class="btn btn-success" id="btn-remembered">
-                                    <span>✓</span> Lo recordé
-                                </button>
+                        <div class="telemetry-column">
+                            <div class="glass-card telemetry-card">
+                                <h3>Telemetría de la Interacción</h3>
+                                <div class="metric-list">
+                                    <div class="metric-item">
+                                        <span class="metric-label">Tiempo de Respuesta (Latencia):</span>
+                                        <span class="metric-value highlight" id="telemetry-latency">0 ms</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-label">Dificultad Intrínseca:</span>
+                                        <span class="metric-value" id="telemetry-difficulty">Media</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-label">Número de Repasos:</span>
+                                        <span class="metric-value" id="telemetry-reviews">3</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-label">Tasa Histórica de Aciertos:</span>
+                                        <span class="metric-value" id="telemetry-accuracy">85%</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-label">Horas desde Último Repaso:</span>
+                                        <span class="metric-value" id="telemetry-elapsed">72h (3 días)</span>
+                                    </div>
+                                </div>
+                                <div class="divider"></div>
+                                <h3>Predicción de la Curva del Olvido</h3>
+                                <div class="prediction-box" id="practice-prediction-box">
+                                    <div class="probability-bar-container">
+                                        <div class="probability-label">
+                                            <span>Riesgo de Olvido (Probabilidad):</span>
+                                            <span class="prob-num" id="practice-prob-val">24.5%</span>
+                                        </div>
+                                        <div class="probability-bar">
+                                            <div class="probability-fill" id="practice-prob-fill" style="width: 24.5%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="recommendation-badge" id="practice-rec-badge">
+                                        Retención Estable - Repasar en 8 días
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
+                </section>
 
-                    <div class="telemetry-column">
-                        <div class="glass-card telemetry-card">
-                            <h3>Telemetría de la Interacción</h3>
-                            <div class="metric-list">
-                                <div class="metric-item">
-                                    <span class="metric-label">Tiempo de Respuesta (Latencia):</span>
-                                    <span class="metric-value highlight" id="telemetry-latency">0 ms</span>
+                <!-- TAB 2: ML Simulator -->
+                <section id="tab-simulator" class="tab-panel">
+                    <div class="simulator-layout">
+                        <div class="glass-card controls-card">
+                            <h2>Ajuste de Variables Predictoras (Features)</h2>
+                            <p class="description">Modifica los deslizadores para simular el comportamiento de un estudiante y ver los resultados inmediatos de la Regresión Logística.</p>
+                            <div class="control-group">
+                                <label class="control-label">
+                                    <span>Horas sin repasar:</span>
+                                    <span class="control-value" id="val-elapsed">72 h</span>
+                                </label>
+                                <input type="range" id="slider-elapsed" min="1" max="720" value="72" class="slider">
+                            </div>
+                            <div class="control-group">
+                                <label class="control-label">
+                                    <span>Latencia de respuesta:</span>
+                                    <span class="control-value" id="val-latency">2500 ms</span>
+                                </label>
+                                <input type="range" id="slider-latency" min="400" max="10000" step="100" value="2500" class="slider">
+                            </div>
+                            <div class="control-group">
+                                <label class="control-label">
+                                    <span>Cantidad de repasos previos:</span>
+                                    <span class="control-value" id="val-reviews">3</span>
+                                </label>
+                                <input type="range" id="slider-reviews" min="1" max="15" value="3" class="slider">
+                            </div>
+                            <div class="control-group">
+                                <label class="control-label">
+                                    <span>Porcentaje histórico de aciertos:</span>
+                                    <span class="control-value" id="val-accuracy">85 %</span>
+                                </label>
+                                <input type="range" id="slider-accuracy" min="0" max="100" value="85" class="slider">
+                            </div>
+                            <div class="control-grid-2">
+                                <div class="control-group">
+                                    <label class="control-label">Dificultad de la Palabra:</label>
+                                    <select id="select-difficulty" class="input-select">
+                                        <option value="Baja">Baja (Frecuente / Corta)</option>
+                                        <option value="Media" selected>Media (Normal)</option>
+                                        <option value="Alta">Alta (Phrasal Verbs / Expresiones)</option>
+                                    </select>
                                 </div>
-                                <div class="metric-item">
-                                    <span class="metric-label">Dificultad Intrínseca:</span>
-                                    <span class="metric-value" id="telemetry-difficulty">Media</span>
+                                <div class="control-group">
+                                    <label class="control-label">Nivel MCER Estudiante:</label>
+                                    <select id="select-mcer" class="input-select">
+                                        <option value="A1">A1 (Básico Inicial)</option>
+                                        <option value="A2">A2 (Básico Superior)</option>
+                                        <option value="B1" selected>B1 (Pre-Intermedio)</option>
+                                        <option value="B2">B2 (Intermedio Alto)</option>
+                                        <option value="C1">C1 (Avanzado)</option>
+                                        <option value="C2">C2 (Fluidez Total)</option>
+                                    </select>
                                 </div>
-                                <div class="metric-item">
-                                    <span class="metric-label">Número de Repasos:</span>
-                                    <span class="metric-value" id="telemetry-reviews">3</span>
+                            </div>
+                        </div>
+
+                        <div class="glass-card output-card">
+                            <h2>Predicción en Tiempo Real del Modelo</h2>
+                            <div class="big-metric-container">
+                                <div class="probability-circle-wrap">
+                                    <svg class="progress-ring" width="160" height="160">
+                                        <circle class="progress-ring__circle-bg" stroke="#1f2937" stroke-width="12" fill="transparent" r="70" cx="80" cy="80"/>
+                                        <circle class="progress-ring__circle" id="sim-progress-circle" stroke="#10b981" stroke-width="12" fill="transparent" r="70" cx="80" cy="80"/>
+                                    </svg>
+                                    <div class="probability-percentage" id="sim-prob-percent">24.5%</div>
                                 </div>
-                                <div class="metric-item">
-                                    <span class="metric-label">Tasa Histórica de Aciertos:</span>
-                                    <span class="metric-value" id="telemetry-accuracy">85%</span>
-                                </div>
-                                <div class="metric-item">
-                                    <span class="metric-label">Horas desde Último Repaso:</span>
-                                    <span class="metric-value" id="telemetry-elapsed">72h (3 días)</span>
-                                </div>
+                                <p class="metric-title">Probabilidad de Olvido Calculada</p>
+                            </div>
+                            <div class="decision-box" id="sim-decision-box">
+                                <div class="decision-title">Clasificación de Intervención:</div>
+                                <div class="decision-value" id="sim-decision-val">Retención Segura (0)</div>
+                                <div class="decision-desc" id="sim-decision-desc">El estudiante recuerda la palabra con un nivel de confianza estable. No requiere repasar hoy.</div>
                             </div>
                             <div class="divider"></div>
-                            <h3>Predicción de la Curva del Olvido</h3>
-                            <div class="prediction-box" id="practice-prediction-box">
-                                <div class="probability-bar-container">
-                                    <div class="probability-label">
-                                        <span>Riesgo de Olvido (Probabilidad):</span>
-                                        <span class="prob-num" id="practice-prob-val">24.5%</span>
-                                    </div>
-                                    <div class="probability-bar">
-                                        <div class="probability-fill" id="practice-prob-fill" style="width: 24.5%"></div>
-                                    </div>
-                                </div>
-                                <div class="recommendation-badge" id="practice-rec-badge">
-                                    Retención Estable - Repasar en 8 días
-                                </div>
+                            <h3>Recomendación de Repetición Espaciada</h3>
+                            <div class="recommendation-result">
+                                <div class="rec-interval-label">Próximo repaso sugerido en:</div>
+                                <div class="rec-interval-days" id="sim-rec-days">8 días</div>
+                                <div class="rec-formula-note">Calculado dinámicamente: el intervalo se expande a mayor cantidad de repasos exitosos y menores tiempos de respuesta (latencias).</div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </section>
+                </section>
 
-            <!-- TAB CONTENT 2: ML Simulator -->
-            <section id="tab-simulator" class="tab-panel">
-                <div class="simulator-layout">
-                    <!-- Configurator Panel -->
-                    <div class="glass-card controls-card">
-                        <h2>Ajuste de Variables Predictoras (Features)</h2>
-                        <p class="description">Modifica los deslizadores para simular el comportamiento de un estudiante y ver los resultados inmediatos de la Regresión Logística.</p>
-                        
-                        <div class="control-group">
-                            <label class="control-label">
-                                <span>Horas sin repasar:</span>
-                                <span class="control-value" id="val-elapsed">72 h</span>
-                            </label>
-                            <input type="range" id="slider-elapsed" min="1" max="720" value="72" class="slider">
-                        </div>
-
-                        <div class="control-group">
-                            <label class="control-label">
-                                <span>Latencia de respuesta:</span>
-                                <span class="control-value" id="val-latency">2500 ms</span>
-                            </label>
-                            <input type="range" id="slider-latency" min="400" max="10000" step="100" value="2500" class="slider">
-                        </div>
-
-                        <div class="control-group">
-                            <label class="control-label">
-                                <span>Cantidad de repasos previos:</span>
-                                <span class="control-value" id="val-reviews">3</span>
-                            </label>
-                            <input type="range" id="slider-reviews" min="1" max="15" value="3" class="slider">
-                        </div>
-
-                        <div class="control-group">
-                            <label class="control-label">
-                                <span>Porcentaje histórico de aciertos:</span>
-                                <span class="control-value" id="val-accuracy">85 %</span>
-                            </label>
-                            <input type="range" id="slider-accuracy" min="0" max="100" value="85" class="slider">
-                        </div>
-
-                        <div class="control-grid-2">
-                            <div class="control-group">
-                                <label class="control-label">Dificultad de la Palabra:</label>
-                                <select id="select-difficulty" class="input-select">
-                                    <option value="Baja">Baja (Frecuente / Corta)</option>
-                                    <option value="Media" selected>Media (Normal)</option>
-                                    <option value="Alta">Alta (Phrasal Verbs / Expresiones)</option>
-                                </select>
+                <!-- TAB 3: Dashboard -->
+                <section id="tab-dashboard" class="tab-panel">
+                    <div class="dashboard-metrics">
+                        <div class="glass-card metric-box">
+                            <span class="box-icon">📚</span>
+                            <div class="box-data">
+                                <span class="box-num" id="dash-total-words">10</span>
+                                <span class="box-label">Palabras en Estudio</span>
                             </div>
-                            <div class="control-group">
-                                <label class="control-label">Nivel MCER Estudiante:</label>
-                                <select id="select-mcer" class="input-select">
-                                    <option value="A1">A1 (Básico Inicial)</option>
-                                    <option value="A2">A2 (Básico Superior)</option>
-                                    <option value="B1" selected>B1 (Pre-Intermedio)</option>
-                                    <option value="B2">B2 (Intermedio Alto)</option>
-                                    <option value="C1">C1 (Avanzado)</option>
-                                    <option value="C2">C2 (Fluidez Total)</option>
-                                </select>
+                        </div>
+                        <div class="glass-card metric-box success">
+                            <span class="box-icon">✅</span>
+                            <div class="box-data">
+                                <span class="box-num" id="dash-retained-words">7</span>
+                                <span class="box-label">Retención Segura (R ≥ 50%)</span>
+                            </div>
+                        </div>
+                        <div class="glass-card metric-box danger">
+                            <span class="box-icon">⚠️</span>
+                            <div class="box-data">
+                                <span class="box-num" id="dash-forgot-words">3</span>
+                                <span class="box-label">En Riesgo (Repasar Hoy)</span>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Predictions Panel -->
-                    <div class="glass-card output-card">
-                        <h2>Predicción en Tiempo Real del Modelo</h2>
-                        <div class="big-metric-container">
-                            <div class="probability-circle-wrap">
-                                <svg class="progress-ring" width="160" height="160">
-                                    <circle class="progress-ring__circle-bg" stroke="#1f2937" stroke-width="12" fill="transparent" r="70" cx="80" cy="80" />
-                                    <circle class="progress-ring__circle" id="sim-progress-circle" stroke="#10b981" stroke-width="12" fill="transparent" r="70" cx="80" cy="80" />
-                                </svg>
-                                <div class="probability-percentage" id="sim-prob-percent">24.5%</div>
-                            </div>
-                            <p class="metric-title">Probabilidad de Olvido Calculada</p>
+                    <div class="glass-card table-card">
+                        <div class="table-header-row">
+                            <h2>Listado de Vocabulario y Estado de Retención</h2>
+                            <button class="btn btn-secondary" id="btn-reset-vocab">Restablecer Todo</button>
                         </div>
-
-                        <div class="decision-box" id="sim-decision-box">
-                            <div class="decision-title">Clasificación de Intervención:</div>
-                            <div class="decision-value" id="sim-decision-val">Retención Segura (0)</div>
-                            <div class="decision-desc" id="sim-decision-desc">El estudiante recuerda la palabra con un nivel de confianza estable. No requiere repasar hoy.</div>
-                        </div>
-
-                        <div class="divider"></div>
-
-                        <h3>Recomendación de Repetición Espaciada</h3>
-                        <div class="recommendation-result">
-                            <div class="rec-interval-label">Próximo repaso sugerido en:</div>
-                            <div class="rec-interval-days" id="sim-rec-days">8 días</div>
-                            <div class="rec-formula-note">Calculado dinámicamente: el intervalo se expande a mayor cantidad de repasos exitosos y menores tiempos de respuesta (latencias).</div>
+                        <div class="table-responsive">
+                            <table class="vocab-table">
+                                <thead>
+                                    <tr>
+                                        <th>Palabra</th>
+                                        <th>Categoría</th>
+                                        <th>Dificultad</th>
+                                        <th>Repasos</th>
+                                        <th>Último Repaso</th>
+                                        <th>Riesgo de Olvido</th>
+                                        <th>Estado / Próximo Repaso</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="vocab-table-body">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                </div>
-            </section>
+                </section>
+            </main>
+        </div>
+    </div><!-- end #app-page -->
 
-            <!-- TAB CONTENT 3: Dashboard -->
-            <section id="tab-dashboard" class="tab-panel">
-                <!-- Summary Metrics Rows -->
-                <div class="dashboard-metrics">
-                    <div class="glass-card metric-box">
-                        <span class="box-icon">📚</span>
-                        <div class="box-data">
-                            <span class="box-num" id="dash-total-words">10</span>
-                            <span class="box-label">Palabras en Estudio</span>
-                        </div>
-                    </div>
-                    <div class="glass-card metric-box success">
-                        <span class="box-icon">✅</span>
-                        <div class="box-data">
-                            <span class="box-num" id="dash-retained-words">7</span>
-                            <span class="box-label">Retención Segura (R &ge; 50%)</span>
-                        </div>
-                    </div>
-                    <div class="glass-card metric-box danger">
-                        <span class="box-icon">⚠️</span>
-                        <div class="box-data">
-                            <span class="box-num" id="dash-forgot-words">3</span>
-                            <span class="box-label">En Riesgo (Repasar Hoy)</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Vocabulary List Table -->
-                <div class="glass-card table-card">
-                    <div class="table-header-row">
-                        <h2>Listado de Vocabulario y Estado de Retención</h2>
-                        <button class="btn btn-secondary" id="btn-reset-vocab">Restablecer Todo</button>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="vocab-table">
-                            <thead>
-                                <tr>
-                                    <th>Palabra</th>
-                                    <th>Categoría</th>
-                                    <th>Dificultad</th>
-                                    <th>Repasos</th>
-                                    <th>Último Repaso</th>
-                                    <th>Riesgo de Olvido</th>
-                                    <th>Estado / Próximo Repaso</th>
-                                </tr>
-                            </thead>
-                            <tbody id="vocab-table-body">
-                                <!-- Dynamic rows go here -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-        </main>
-    </div>
+    <script>
+        function showApp() {
+            document.getElementById('landing-page').style.display = 'none';
+            document.getElementById('app-page').style.display = 'block';
+            document.getElementById('back-to-landing').style.display = 'flex';
+        }
+        function showLanding() {
+            document.getElementById('landing-page').style.display = 'flex';
+            document.getElementById('app-page').style.display = 'none';
+            document.getElementById('back-to-landing').style.display = 'none';
+        }
+        function scrollToModels() {
+            document.getElementById('models-section').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
     <script src="script.js" defer></script>
 </body>
 </html>
