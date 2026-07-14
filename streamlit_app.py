@@ -274,7 +274,7 @@ elif page == "📊 Dashboard de Vocabulario":
 
     st.divider()
     st.dataframe(
-        df.drop(columns=["_risk"]).style.applymap(
+        df.drop(columns=["_risk"]).style.map(
             lambda v: "color: #f87171" if "⚠️" in str(v) else ("color: #34d399" if "✅" in str(v) else ""),
             subset=["Estado"]
         ),
