@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpacedL2 - Simulador de Repetición Espaciada y Curva del Olvido</title>
+    <meta name="description" content="Aplicación interactiva y simulador de Machine Learning para optimizar la retención de vocabulario utilizando la curva del olvido de Ebbinghaus.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo-area">
+                <div class="logo-icon">🧠</div>
+                <span class="logo-text">SpacedL2</span>
+            </div>
+            <nav class="nav-menu">
+                <button class="nav-item active" data-tab="practice" id="btn-practice">
+                    <span class="nav-icon">🎴</span> Práctica Activa
+                </button>
+                <button class="nav-item" data-tab="simulator" id="btn-simulator">
+                    <span class="nav-icon">🎛️</span> Simulador ML
+                </button>
+                <button class="nav-item" data-tab="dashboard" id="btn-dashboard">
+                    <span class="nav-icon">📊</span> Panel de Retención
+                </button>
+            </nav>
+            <div class="user-status">
+                <div class="status-avatar">🎓</div>
+                <div class="status-info">
+                    <p class="user-name">Estudiante L2</p>
+                    <span class="user-level" id="nav-user-level">Nivel: B1 (Intermedio)</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="app-header">
+                <div>
+                    <h1 id="page-title">Práctica Activa de Vocabulario</h1>
+                    <p class="subtitle" id="page-subtitle">Refuerza tu memoria en el momento exacto usando Machine Learning.</p>
+                </div>
+                <div class="header-widgets">
+                    <div class="mcer-badge">
+                        <span>Ajustar mi Nivel:</span>
+                        <select id="user-mcer-select">
+                            <option value="A1">A1 (Principiante)</option>
+                            <option value="A2">A2 (Básico)</option>
+                            <option value="B1" selected>B1 (Pre-Intermedio)</option>
+                            <option value="B2">B2 (Intermedio Alto)</option>
+                            <option value="C1">C1 (Avanzado)</option>
+                            <option value="C2">C2 (Maestría)</option>
+                        </select>
+                    </div>
+                </div>
+            </header>
+
+            <!-- TAB CONTENT 1: Practice Cards -->
+            <section id="tab-practice" class="tab-panel active">
+                <div class="practice-layout">
+                    <div class="card-column">
+                        <div class="flashcard-container">
+                            <div class="flashcard" id="flashcard">
+                                <div class="flashcard-front">
+                                    <span class="word-category" id="card-category">Adjetivo</span>
+                                    <h2 class="word-text" id="card-word">reluctant</h2>
+                                    <p class="word-pronunciation" id="card-pronunciation">/rɪˈlʌk.tənt/</p>
+                                    <p class="tap-hint">Haz clic para voltear la tarjeta</p>
+                                </div>
+                                <div class="flashcard-back">
+                                    <span class="word-category">Traducción</span>
+                                    <h2 class="word-meaning" id="card-translation">renuente / inclinado a evitar</h2>
+                                    <div class="example-box">
+                                        <p class="example-en" id="card-example-en">"She was reluctant to admit she was wrong."</p>
+                                        <p class="example-es" id="card-example-es">"Ella era renuente a admitir que estaba equivocada."</p>
+                                    </div>
+                                    <p class="tap-hint">Haz clic para volver al frente</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Telemetry Actions -->
+                        <div class="action-buttons-container">
+                            <p class="question-prompt">¿Recordaste la palabra antes de voltear la tarjeta?</p>
+                            <div class="buttons-row">
+                                <button class="btn btn-danger" id="btn-forgot">
+                                    <span>❌</span> Lo olvidé
+                                </button>
+                                <button class="btn btn-success" id="btn-remembered">
+                                    <span>✓</span> Lo recordé
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="telemetry-column">
+                        <div class="glass-card telemetry-card">
+                            <h3>Telemetría de la Interacción</h3>
+                            <div class="metric-list">
+                                <div class="metric-item">
+                                    <span class="metric-label">Tiempo de Respuesta (Latencia):</span>
+                                    <span class="metric-value highlight" id="telemetry-latency">0 ms</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Dificultad Intrínseca:</span>
+                                    <span class="metric-value" id="telemetry-difficulty">Media</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Número de Repasos:</span>
+                                    <span class="metric-value" id="telemetry-reviews">3</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Tasa Histórica de Aciertos:</span>
+                                    <span class="metric-value" id="telemetry-accuracy">85%</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Horas desde Último Repaso:</span>
+                                    <span class="metric-value" id="telemetry-elapsed">72h (3 días)</span>
+                                </div>
+                            </div>
+                            <div class="divider"></div>
+                            <h3>Predicción de la Curva del Olvido</h3>
+                            <div class="prediction-box" id="practice-prediction-box">
+                                <div class="probability-bar-container">
+                                    <div class="probability-label">
+                                        <span>Riesgo de Olvido (Probabilidad):</span>
+                                        <span class="prob-num" id="practice-prob-val">24.5%</span>
+                                    </div>
+                                    <div class="probability-bar">
+                                        <div class="probability-fill" id="practice-prob-fill" style="width: 24.5%"></div>
+                                    </div>
+                                </div>
+                                <div class="recommendation-badge" id="practice-rec-badge">
+                                    Retención Estable - Repasar en 8 días
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB CONTENT 2: ML Simulator -->
+            <section id="tab-simulator" class="tab-panel">
+                <div class="simulator-layout">
+                    <!-- Configurator Panel -->
+                    <div class="glass-card controls-card">
+                        <h2>Ajuste de Variables Predictoras (Features)</h2>
+                        <p class="description">Modifica los deslizadores para simular el comportamiento de un estudiante y ver los resultados inmediatos de la Regresión Logística.</p>
+                        
+                        <div class="control-group">
+                            <label class="control-label">
+                                <span>Horas sin repasar:</span>
+                                <span class="control-value" id="val-elapsed">72 h</span>
+                            </label>
+                            <input type="range" id="slider-elapsed" min="1" max="720" value="72" class="slider">
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label">
+                                <span>Latencia de respuesta:</span>
+                                <span class="control-value" id="val-latency">2500 ms</span>
+                            </label>
+                            <input type="range" id="slider-latency" min="400" max="10000" step="100" value="2500" class="slider">
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label">
+                                <span>Cantidad de repasos previos:</span>
+                                <span class="control-value" id="val-reviews">3</span>
+                            </label>
+                            <input type="range" id="slider-reviews" min="1" max="15" value="3" class="slider">
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label">
+                                <span>Porcentaje histórico de aciertos:</span>
+                                <span class="control-value" id="val-accuracy">85 %</span>
+                            </label>
+                            <input type="range" id="slider-accuracy" min="0" max="100" value="85" class="slider">
+                        </div>
+
+                        <div class="control-grid-2">
+                            <div class="control-group">
+                                <label class="control-label">Dificultad de la Palabra:</label>
+                                <select id="select-difficulty" class="input-select">
+                                    <option value="Baja">Baja (Frecuente / Corta)</option>
+                                    <option value="Media" selected>Media (Normal)</option>
+                                    <option value="Alta">Alta (Phrasal Verbs / Expresiones)</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label class="control-label">Nivel MCER Estudiante:</label>
+                                <select id="select-mcer" class="input-select">
+                                    <option value="A1">A1 (Básico Inicial)</option>
+                                    <option value="A2">A2 (Básico Superior)</option>
+                                    <option value="B1" selected>B1 (Pre-Intermedio)</option>
+                                    <option value="B2">B2 (Intermedio Alto)</option>
+                                    <option value="C1">C1 (Avanzado)</option>
+                                    <option value="C2">C2 (Fluidez Total)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Predictions Panel -->
+                    <div class="glass-card output-card">
+                        <h2>Predicción en Tiempo Real del Modelo</h2>
+                        <div class="big-metric-container">
+                            <div class="probability-circle-wrap">
+                                <svg class="progress-ring" width="160" height="160">
+                                    <circle class="progress-ring__circle-bg" stroke="#1f2937" stroke-width="12" fill="transparent" r="70" cx="80" cy="80" />
+                                    <circle class="progress-ring__circle" id="sim-progress-circle" stroke="#10b981" stroke-width="12" fill="transparent" r="70" cx="80" cy="80" />
+                                </svg>
+                                <div class="probability-percentage" id="sim-prob-percent">24.5%</div>
+                            </div>
+                            <p class="metric-title">Probabilidad de Olvido Calculada</p>
+                        </div>
+
+                        <div class="decision-box" id="sim-decision-box">
+                            <div class="decision-title">Clasificación de Intervención:</div>
+                            <div class="decision-value" id="sim-decision-val">Retención Segura (0)</div>
+                            <div class="decision-desc" id="sim-decision-desc">El estudiante recuerda la palabra con un nivel de confianza estable. No requiere repasar hoy.</div>
+                        </div>
+
+                        <div class="divider"></div>
+
+                        <h3>Recomendación de Repetición Espaciada</h3>
+                        <div class="recommendation-result">
+                            <div class="rec-interval-label">Próximo repaso sugerido en:</div>
+                            <div class="rec-interval-days" id="sim-rec-days">8 días</div>
+                            <div class="rec-formula-note">Calculado dinámicamente: el intervalo se expande a mayor cantidad de repasos exitosos y menores tiempos de respuesta (latencias).</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB CONTENT 3: Dashboard -->
+            <section id="tab-dashboard" class="tab-panel">
+                <!-- Summary Metrics Rows -->
+                <div class="dashboard-metrics">
+                    <div class="glass-card metric-box">
+                        <span class="box-icon">📚</span>
+                        <div class="box-data">
+                            <span class="box-num" id="dash-total-words">10</span>
+                            <span class="box-label">Palabras en Estudio</span>
+                        </div>
+                    </div>
+                    <div class="glass-card metric-box success">
+                        <span class="box-icon">✅</span>
+                        <div class="box-data">
+                            <span class="box-num" id="dash-retained-words">7</span>
+                            <span class="box-label">Retención Segura (R &ge; 50%)</span>
+                        </div>
+                    </div>
+                    <div class="glass-card metric-box danger">
+                        <span class="box-icon">⚠️</span>
+                        <div class="box-data">
+                            <span class="box-num" id="dash-forgot-words">3</span>
+                            <span class="box-label">En Riesgo (Repasar Hoy)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vocabulary List Table -->
+                <div class="glass-card table-card">
+                    <div class="table-header-row">
+                        <h2>Listado de Vocabulario y Estado de Retención</h2>
+                        <button class="btn btn-secondary" id="btn-reset-vocab">Restablecer Todo</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="vocab-table">
+                            <thead>
+                                <tr>
+                                    <th>Palabra</th>
+                                    <th>Categoría</th>
+                                    <th>Dificultad</th>
+                                    <th>Repasos</th>
+                                    <th>Último Repaso</th>
+                                    <th>Riesgo de Olvido</th>
+                                    <th>Estado / Próximo Repaso</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vocab-table-body">
+                                <!-- Dynamic rows go here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="script.js" defer></script>
+</body>
+</html>
